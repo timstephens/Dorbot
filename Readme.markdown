@@ -34,11 +34,14 @@ Installation on Raspberry Pi
 Connect up the radio to the GPIO on the Pi. 
 
 Enable access to the SPI module by commenting out the line in the blacklist file
-	 /etc/modprobe.d/raspi-blacklsit.conf
- 	sudo reboot
+
+	/etc/modprobe.d/raspi-blacklist.conf
+	sudo reboot
 
  After rebooting, at the terminal prompt type:
- 	lsmod
+ 
+	lsmod
+	
 You should see spi in the list of available modules.
 
 
@@ -46,34 +49,43 @@ Install MySQL and libmysqlclient-dev:
 
 Raspberry Pi
 
-    sudo apt-get update
-    sudo apt-get dist-upgrade
+	sudo apt-get update
+	sudo apt-get dist-upgrade
 
-//Allow the upgrade to take place, then 
-    sudo apt-get install mysql-server mysql-client
+//Allow the upgrade to take place, then
+
+	sudo apt-get install mysql-server mysql-client
 
 //Install C API connector
-    sudo apt-get install libmysqlclient-dev
 
-    mysql -u root -p
+	sudo apt-get install libmysqlclient-dev
+
+Log in to mysql using the password that you created for root during the installation.
+
+	mysql -u root -p
+	
 >password
 
 	
 Load the mysql dump file into the database. In the mysql client:
+
 	source Dorbot/RPi/db.mysql
 
 Get the RF24 library, and install as required.
+
 	git clone https://www.github.com/maniacbug/RF24.git
 
 I copied the .h, .cpp and .o files into the Dorbot folder rather than specifying their installation locations.
 
 Next, build the .cpp
+
 	cd Dorbot
-	 g++ -Wall -Ofast -mfpu=vfp -mfloat-abi=hard -march=armv6zk -mtune=arm1176jzf-s -L./librf24/  -lrf24 dorbot_server.cpp -o dorbot_server `mysql_config --cflags --libs`
+	g++ -Wall -Ofast -mfpu=vfp -mfloat-abi=hard -march=armv6zk -mtune=arm1176jzf-s -L./librf24/  -lrf24 dorbot_server.cpp -o dorbot_server `mysql_config --cflags --libs`
 
 Run the server 
+
 	sudo ./server
-	
+
 You should see MySQL version information printed out, and then the server should wait for incoming connections from the Arduino.
 
 Installation on Arduino
@@ -82,17 +94,19 @@ Installation on Arduino
 Connect the radio and card reader to the SPI ports on the Arduino. The pins are
 
 ###Radio
-Radio -- Arduino
-CE -- 9
-CSN -- 10
-Others as usual.
-Note: Don't connect the radio to the 5V pin. You'll cause damage
+
+	Radio -- Arduino
+	CE -- 9
+	CSN -- 10
+	Others as usual.
+	Note: Don't connect the radio to the 5V pin. You'll cause damage
 
 ###Card Reader
-RFID -- Arduino
-SS -- 7
-RST -- 6
-Others as usual.
+
+	RFID -- Arduino
+	SS -- 7
+	RST -- 6
+	Others as usual.
 
 Connect Piezo buzzer between pin 3 and ground
 
