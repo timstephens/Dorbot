@@ -72,7 +72,7 @@ void loop() {
   radio.write(outBuffer, 12);
   
   // ========================================================================
-  /* For the door to be unlocked, the controller needs to respond to the transmitted key within about 0.5s. 
+  /* For the door to be unlocked, the controller needs to respond to the transmitted key within about 0.2s. 
      The code is never going to reach this point unless a key has been scanned, so you'd need to scan a card 
      and then immediately send the 'open' command before the main controller could respond. If there's no card 
      scanned, the door will never open.
