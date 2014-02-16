@@ -112,6 +112,30 @@ Connect Piezo buzzer between pin 3 and ground
 
 Load the RFID_Door_Check code into your Arduino IDE, and upload the code. Open the Serial Monitor to see what information is being sent backwards and forwards. For the first version of this, the beeper sounds different tones depending on whether the user is permitted into the room or not. 
 
+
+Running Automatically
+---------------------
+
+To make the server run automatically whenever the Pi is booted, use supervisord. You need to install supervisord with atp-get:
+
+	apt-get install supervisord
+
+Then, add the following lines to /etc/supervisor/supervisord.conf
+
+	[program:dorbot_server]
+	command=/home/pi/db/RPi/dorbot_server >> /home/pi/dorbot_log
+	numprocs = 1
+	autostart = true
+	autorestart = true
+	startsecs = 10
+	startretries = 3
+	stopsignal = TERM
+	stdout_logfile = /home/pi/dorbot_log 
+
+When the Pi boots, the server code will be running (and log to the text file so you can see that it's working).
+
+
+
 Release Notes
 -------------
 
