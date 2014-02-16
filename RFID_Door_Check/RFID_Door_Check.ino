@@ -9,6 +9,9 @@
 #include <string.h>
 #include <RF24.h>
 #include "printf.h"
+#include <aes.h>
+#include <AESLib.h>
+
 
 RF24 radio(9,10); //The CE, CSN pins on the radio. 
 
@@ -17,6 +20,9 @@ RF24 radio(9,10); //The CE, CSN pins on the radio.
 
 MFRC522 mfrc522(SS_PIN, RST_PIN);	// Create MFRC522 instance.
 
+
+uint8_t key[] = {
+    0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15  };
 void setup() {
 
   // init radio for writing on channel 76
@@ -40,6 +46,7 @@ void loop() {
   char outBuffer[32] = ""; //Somewhere to store the data.
   char receivePayload[8] = "";
   char readTimeout=0;
+  int salt;  //Pad the data that's sent with something extra so that it's not the same every time (even for the same card)
   //Serial.println("start");
   
   //Look for new cards
@@ -60,13 +67,22 @@ void loop() {
     Serial.print(mfrc522.uid.uidByte[i], HEX);
   } 
   Serial.println();
-
+  
   //Send some sort of identifier so that we cn use this card scanner for other applications than just entry (like controlling the beer fridge). 
-  sprintf(outBuffer, "%X %X %X %X\0", mfrc522.uid.uidByte[0], mfrc522.uid.uidByte[1], mfrc522.uid.uidByte[2], mfrc522.uid.uidByte[3]);
+  salt = millis() %1000;
+  sprintf(outBuffer, "d1%X %X %X %X%i\0", mfrc522.uid.uidByte[0], mfrc522.uid.uidByte[1], mfrc522.uid.uidByte[2], mfrc522.uid.uidByte[3], salt);
   
   Serial.print("outBuffer=");
   Serial.println(outBuffer);
-  delay(1000);
+  //Encrypt the data.
+  
+  aes128_enc_single(key, outBuffer);
+
+  Serial.print("Encrypted Data: ");
+  Serial.println(outBuffer);
+  
+  delay(200);  //Why is there a delay here? 
+  
   //bool RF24::write( const void* buf, uint8_t len )
   
   radio.write(outBuffer, 12);
@@ -86,7 +102,7 @@ void loop() {
  
  bool timeout = false;
     while ( ! radio.available() && ! timeout )
-      if (millis() - started_waiting_at > 200 )
+      if (millis() - started_waiting_at > 500 )
         timeout = true;
 
     // Describe the results
@@ -119,6 +135,10 @@ void loop() {
     Serial.print("Received a ");
     Serial.print(receivePayload);
     Serial.println(";");
+    
+    //Now need to decrypt the payload
+    //Use the handy AESLib function to overwrite in place 
+     aes128_dec_single(key, receivePayload);
     
     if(receivePayload[0] == '1') {
        tone(3, 4000, 20);
