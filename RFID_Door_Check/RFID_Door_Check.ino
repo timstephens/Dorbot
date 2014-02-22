@@ -33,6 +33,7 @@ void setup() {
   radio.openReadingPipe(1,0xF0F0F0F0D2LL); 
   radio.enableDynamicPayloads();
   radio.powerUp();
+   radio.setPayloadSize(32);
 
   Serial.begin(9600);	// Initialize serial communications with the PC
   while(!Serial);  //Make sure that we can see the diagnostics before we continue. 
@@ -44,7 +45,7 @@ void setup() {
 
 void loop() {
   char outBuffer[32] = ""; //Somewhere to store the data.
-  char receivePayload[8] = "";
+  char receivePayload[32] = "";
   char readTimeout=0;
   int salt;  //Pad the data that's sent with something extra so that it's not the same every time (even for the same card)
   //Serial.println("start");
@@ -76,7 +77,7 @@ void loop() {
   Serial.println(outBuffer);
   //Encrypt the data.
   
-  aes128_enc_single(key, outBuffer);
+  //aes128_enc_single(key, outBuffer);
 
   Serial.print("Encrypted Data: ");
   Serial.println(outBuffer);
@@ -85,7 +86,7 @@ void loop() {
   
   //bool RF24::write( const void* buf, uint8_t len )
   
-  radio.write(outBuffer, 16);
+  radio.write(outBuffer, 32);
   
   // ========================================================================
   /* For the door to be unlocked, the controller needs to respond to the transmitted key within about 0.2s. 
@@ -108,7 +109,7 @@ void loop() {
     // Describe the results
     if ( timeout )
     {
-      printf("Failed, response timed out.\n\r");
+       Serial.println("Failed, response timed out.");
     }
     else
     {

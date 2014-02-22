@@ -73,7 +73,7 @@ Load the mysql dump file into the database. In the mysql client:
 
 Get the RF24 library, and install as required.
 
-	git clone https://www.github.com/maniacbug/RF24.git
+	git clone https://www.github.com/maniacbug/RF24.git Dorbot
 
 I copied the .h, .cpp and .o files into the Dorbot folder rather than specifying their installation locations.
 
@@ -96,18 +96,40 @@ Connect the radio and card reader to the SPI ports on the Arduino. The pins are
 ###Radio
 
 	Radio -- Arduino
-	CE -- 9
-	CSN -- 10
-	Others as usual.
-	Note: Don't connect the radio to the 5V pin. You'll cause damage
+	1 GND -- GND  
+	2 3v3 -- 3v3
+	3 CE -- 9
+	4 CSN -- 10
+	5 SCK -- 
+	6 MOSI -- 
+	7 MISO -- 
+	8 IRQ -- NC
+
+	
+	
+	
+	Radio -- Raspberry Pi
+	1 GND -- P6  
+	2 3v3 -- P1
+	3 CE -- P22
+	4 CSN -- P24
+	5 SCK -- P23
+	6 MOSI -- P19
+	7 MISO -- P21
+	8 IRQ -- NC
+	
+
+	Note: Don't connect the radio +VDD to the 5V pin. You'll cause damage.
 
 ###Card Reader
 
 	RFID -- Arduino
 	SS -- 7
 	RST -- 6
-	Others as usual.
-
+	SCK -- 
+	MOSI --
+	MISO --
+	
 Connect Piezo buzzer between pin 3 and ground
 
 Load the RFID_Door_Check code into your Arduino IDE, and upload the code. Open the Serial Monitor to see what information is being sent backwards and forwards. For the first version of this, the beeper sounds different tones depending on whether the user is permitted into the room or not. 
@@ -123,7 +145,7 @@ To make the server run automatically whenever the Pi is booted, use supervisord.
 Then, add the following lines to /etc/supervisor/supervisord.conf
 
 	[program:dorbot_server]
-	command=/home/pi/db/RPi/dorbot_server >> /home/pi/dorbot_log
+	command=/home/pi/Dorbot/RPi/dorbot_server >> /home/pi/dorbot_log
 	numprocs = 1
 	autostart = true
 	autorestart = true
