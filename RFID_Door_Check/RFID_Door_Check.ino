@@ -85,7 +85,7 @@ void loop() {
   
   //bool RF24::write( const void* buf, uint8_t len )
   
-  radio.write(outBuffer, 17);
+  radio.write(outBuffer, 16);
   
   // ========================================================================
   /* For the door to be unlocked, the controller needs to respond to the transmitted key within about 0.2s. 

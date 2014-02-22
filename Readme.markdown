@@ -79,12 +79,12 @@ I copied the .h, .cpp and .o files into the Dorbot folder rather than specifying
 
 Next, build the .cpp
 
-	cd Dorbot
-	g++ -Wall -Ofast -mfpu=vfp -mfloat-abi=hard -march=armv6zk -mtune=arm1176jzf-s -L./librf24/  -lrf24 dorbot_server.cpp -o dorbot_server `mysql_config --cflags --libs`
-
+	cd Dorbot/RPi
+	make
+	
 Run the server 
 
-	sudo ./server
+	sudo ./dorbot_server
 
 You should see MySQL version information printed out, and then the server should wait for incoming connections from the Arduino.
 
@@ -138,6 +138,10 @@ When the Pi boots, the server code will be running (and log to the text file so 
 
 Release Notes
 -------------
+
+###Version 0.2
+I added AES128 encryption to the communications between the two devices. The password needs to be set in the code at each end (and needs to be the same). There's also a makefile for the Raspberry Pi, which will make compiling a little easier. 
+
 
 ###Version 0.1
 
