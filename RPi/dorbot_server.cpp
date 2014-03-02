@@ -36,7 +36,7 @@ void setup(void)
     radio.setCRCLength(RF24_CRC_16);
     radio.openReadingPipe(1,0xF0F0F0F0E1LL);
 	radio.openWritingPipe(0xF0F0F0F0D2LL);
-	radio.setPayloadSize(32);
+	//radio.setPayloadSize(32);
     radio.startListening();
 }
 
@@ -135,8 +135,6 @@ void loop(void)
     struct tm * now = localtime( & t ); // Get curret Time.
 	char buffer[8];
 	char validUser = 0;
-	char *splitString;
-	char *key_id; 
 	 unsigned char dec_out[17];
 	 unsigned char enc_out[17];
 	char userKey[17];
@@ -157,7 +155,7 @@ void loop(void)
 	//Split the incoming data into the command, and the key_id. Then sanitise the key_id to prevent SQLInjection attack.
 		
 	//Need to query the database to see if the user_id is allowed in
-	strncpy(userKey, (const char *)dec_out , 12);
+	strncpy(userKey, (const char *)dec_out+2 , 11);
  	
 	validUser = userAllowedIn(userKey);
 
@@ -184,17 +182,17 @@ void loop(void)
 		AES_encrypt((const unsigned char *)buffer, enc_out, &enc_key);
 		radio.stopListening();
 
-		if(radio.write(enc_out, 12)) {
+		if(radio.write(enc_out, 16)) {
 			cout << "Successfully replied" << buffer << endl;
 		} else {
 			cout << "Error replying" << endl;
 		}
 
-		userRecord(receivePayload, validUser);
+		userRecord(userKey, validUser);
 		validUser = 0;
 		radio.startListening();
 	}
-	usleep(500);
+	usleep(50);
 }
 
 int main(int argc, char **argv)
@@ -202,7 +200,10 @@ int main(int argc, char **argv)
 	setup(); //Run the radio setup stuff
 
 	printf("MySQL client version: %s\n", mysql_get_client_info());
-while(1) loop();
+while(1)
+{
+	loop();
+}
 
 	exit(0);
 }
