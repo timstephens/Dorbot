@@ -8,7 +8,7 @@
 #include <MFRC522.h>
 #include <string.h>
 #include <RF24.h>
-#include "printf.h"
+//#include "printf.h"
 #include <aes.h>
 #include <AESLib.h>
 
@@ -27,7 +27,7 @@ void setup() {
 
   // init radio for writing on channel 76
   radio.begin();
-  radio.setPALevel(RF24_PA_MAX);
+  //radio.setPALevel(RF24_PA_MAX);
   radio.setChannel(0x4c);
   radio.openWritingPipe(0xF0F0F0F0E1LL);
   radio.openReadingPipe(1,0xF0F0F0F0D2LL); 
@@ -44,10 +44,12 @@ void setup() {
 
 void loop() {
   char outBuffer[32] = ""; //Somewhere to store the data.
-  char receivePayload[8] = "";
+  char receivePayload[32] = "";
   char readTimeout=0;
   int salt;  //Pad the data that's sent with something extra so that it's not the same every time (even for the same card)
   //Serial.println("start");
+  radio.printDetails();
+  delay(200);
   
   //Look for new cards
   if (! mfrc522.PICC_IsNewCardPresent()) {
@@ -85,8 +87,9 @@ void loop() {
   
   //bool RF24::write( const void* buf, uint8_t len )
   
-  radio.write(outBuffer, 16);
-  
+  bool success = radio.write(outBuffer, 16);
+  Serial.print("radio.write ");g
+  Serial.println(success, DEC);
   // ========================================================================
   /* For the door to be unlocked, the controller needs to respond to the transmitted key within about 0.2s. 
      The code is never going to reach this point unless a key has been scanned, so you'd need to scan a card 
@@ -108,7 +111,7 @@ void loop() {
     // Describe the results
     if ( timeout )
     {
-      printf("Failed, response timed out.\n\r");
+      Serial.println("Failed, response timed out.\n\r");
     }
     else
     {
@@ -139,6 +142,8 @@ void loop() {
     //Now need to decrypt the payload
     //Use the handy AESLib function to overwrite in place 
      aes128_dec_single(key, receivePayload);
+    Serial.print("Decrypted Data");
+    Serial.println(receivePayload);
     
     if(receivePayload[0] == '1') {
        tone(3, 4000, 20);
