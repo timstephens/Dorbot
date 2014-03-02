@@ -5,5 +5,3 @@ dorbot_server:
 clean:
 	rm dorbot_server
 
-encrypt:
-	g++ -Wall -Ofast -mfpu=vfp -mfloat-abi=hard -march=armv6zk -mtune=arm1176jzf-s -L./librf24/  -lrf24 -lssl -lcrypto encrypt.cpp -o encrypt

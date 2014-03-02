@@ -1,8 +1,6 @@
 /*
 tool to look at MySQL database and return whether a user's key is a valid one or not
-
-There are a number of prerequisites associated with this tool. Check the README for full information.
-
+The first iteration will just try to connect to the DB
 */
 
 #include <cstdlib>
@@ -10,14 +8,7 @@ There are a number of prerequisites associated with this tool. Check the README 
 #include <my_global.h>
 #include <mysql.h>
 #include <stdlib.h>
-#include <string.h>
 #include "RF24.h"
-#include <openssl/aes.h>
-using namespace std;
-
-static const unsigned char key[] = {
-0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
-
 
 using namespace std;
 
@@ -137,29 +128,17 @@ void loop(void)
 	char validUser = 0;
 	char *splitString;
 	char *key_id; 
-	 unsigned char dec_out[17];
-	 unsigned char enc_out[17];
-	char userKey[17];
-	
-	AES_KEY enc_key, dec_key;
 
     while (radio.available())
     {
         // read from radio until payload size is reached
         uint8_t len = radio.getDynamicPayloadSize();
         radio.read(receivePayload, len);
-	//Decrypt the payload
-	cout << "Got payload" << receivePayload << endl;
-
-	AES_set_decrypt_key(key,128,&dec_key);
-	AES_decrypt((const unsigned char *)receivePayload, dec_out, &dec_key);
 
 	//Split the incoming data into the command, and the key_id. Then sanitise the key_id to prevent SQLInjection attack.
 		
 	//Need to query the database to see if the user_id is allowed in
-	strncpy(userKey, (const char *)dec_out , 12);
- 	
-	validUser = userAllowedIn(userKey);
+	validUser = userAllowedIn(receivePayload);
 
         // display payload
 	cout << (now->tm_year + 1900) << '-'
@@ -176,15 +155,10 @@ void loop(void)
 	}
     }
 	if(validUser) {
-	
-
-
-		sprintf(buffer, "%cdorbot_sv%02i", validUser, now->tm_sec);
-		AES_set_encrypt_key(key, 128, &enc_key);
-		AES_encrypt((const unsigned char *)buffer, enc_out, &enc_key);
 		radio.stopListening();
+		sprintf(buffer, "%c", validUser);
 
-		if(radio.write(enc_out, 12)) {
+		if(radio.write(buffer, 1)) {
 			cout << "Successfully replied" << buffer << endl;
 		} else {
 			cout << "Error replying" << endl;
@@ -194,7 +168,6 @@ void loop(void)
 		validUser = 0;
 		radio.startListening();
 	}
-	usleep(500);
 }
 
 int main(int argc, char **argv)
