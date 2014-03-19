@@ -77,7 +77,7 @@ void loop() {
   Serial.println(outBuffer);
   //Encrypt the data.
   
-  //aes128_enc_single(key, outBuffer);
+  aes128_enc_single(key, outBuffer);
 
   Serial.print("Encrypted Data: ");
   Serial.println(outBuffer);
@@ -86,7 +86,7 @@ void loop() {
   
   //bool RF24::write( const void* buf, uint8_t len )
   
-  radio.write(outBuffer, 32);
+  radio.write(outBuffer, 16);
   
   // ========================================================================
   /* For the door to be unlocked, the controller needs to respond to the transmitted key within about 0.2s. 
@@ -103,7 +103,7 @@ void loop() {
  
  bool timeout = false;
     while ( ! radio.available() && ! timeout )
-      if (millis() - started_waiting_at > 500 )
+      if (millis() - started_waiting_at > 1000 )
         timeout = true;
 
     // Describe the results
