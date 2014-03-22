@@ -32,11 +32,11 @@ void setup(void)
     radio.setRetries(15,15);
     radio.setDataRate(RF24_1MBPS);
     radio.setPALevel(RF24_PA_MAX);
-    radio.setChannel(76);
+    radio.setChannel(0x4c);
     radio.setCRCLength(RF24_CRC_16);
     radio.openReadingPipe(1,0xF0F0F0F0E1LL);
 	radio.openWritingPipe(0xF0F0F0F0D2LL);
-	//radio.setPayloadSize(32);
+	radio.setPayloadSize(32);
     radio.startListening();
 }
 
@@ -78,6 +78,7 @@ char userAllowedIn(char keyValue[12]) {
 	MYSQL *con = mysql_init(NULL);
 	char sqlQuery[64] = ""; 
 	char retval=0;
+	keyValue[12]=0; //Terminate the string here so that even if nasties happen, it should crap out the SQL query.
 	//without any sort of error checking, this query could be messed around with to allow an SQL injection attack. Databases could be dropped, false information entered, or the door could be opened without authorisation. §
 	sprintf(sqlQuery, "SELECT valid_user FROM users WHERE key_id = \"%s\"", keyValue);
 
@@ -122,7 +123,7 @@ if (con == NULL)
  
 	  mysql_free_result(result);
 	  mysql_close(con);
-	cout << sqlQuery << "Retval " << retval << endl;
+//	cout << sqlQuery << "Retval " << retval << endl;
 
 	return retval;
 } //UserAllowedIn();
@@ -147,7 +148,7 @@ void loop(void)
         uint8_t len = radio.getDynamicPayloadSize();
         radio.read(receivePayload, len);
 	//Decrypt the payload
-	cout << "Got payload" << receivePayload << endl;
+//	cout << "Got payload" << receivePayload << endl;
 
 	AES_set_decrypt_key(key,128,&dec_key);
 	AES_decrypt((const unsigned char *)receivePayload, dec_out, &dec_key);
@@ -166,7 +167,7 @@ void loop(void)
         << now->tm_hour << ':'
         << now->tm_min << ':'
         <<now->tm_sec << ' '
-         << receivePayload << endl;
+         << userKey << endl;
 	if(validUser == '1') {
 		cout << "User is valid" << endl;
 	} else { 
@@ -181,10 +182,11 @@ void loop(void)
 		AES_set_encrypt_key(key, 128, &enc_key);
 		AES_encrypt((const unsigned char *)buffer, enc_out, &enc_key);
 		radio.stopListening();
-
-		if(radio.write(enc_out, 16)) {
+usleep(50);
+		if(radio.write(buffer, 12)) {
 			cout << "Successfully replied" << buffer << endl;
 		} else {
+			cout << "Was trying to write:" << buffer << endl;
 			cout << "Error replying" << endl;
 		}
 
@@ -192,7 +194,7 @@ void loop(void)
 		validUser = 0;
 		radio.startListening();
 	}
-	usleep(50);
+	usleep(250);
 }
 
 int main(int argc, char **argv)
@@ -203,6 +205,7 @@ int main(int argc, char **argv)
 while(1)
 {
 	loop();
+	usleep(10000);
 }
 
 	exit(0);
