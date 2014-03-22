@@ -124,11 +124,14 @@ Connect the radio and card reader to the SPI ports on the Arduino. The pins are
 ###Card Reader
 
 	RFID -- Arduino
-	SS -- 7
-	RST -- 6
+	SS/SDA -- 6
+	IRQ - NC
+	RST -- 7
 	SCK -- 13
 	MOSI -- 11
 	MISO -- 12
+	GND -- GND
+	3v3 -- 3v3
 	
 Connect Piezo buzzer between pin 3 and ground
 
