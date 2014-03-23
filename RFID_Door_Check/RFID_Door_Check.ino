@@ -15,14 +15,14 @@
 
 RF24 radio(9,10); //The CE, CSN pins on the radio. 
 
-#define SS_PIN 7
-#define RST_PIN 6
+#define SS_PIN 6
+#define RST_PIN 7
 
 MFRC522 mfrc522(SS_PIN, RST_PIN);	// Create MFRC522 instance.
 
 
 uint8_t key[] = {
-    0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15  };
+  0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15  };
 void setup() {
 
   // init radio for writing on channel 76
@@ -33,7 +33,7 @@ void setup() {
   radio.openReadingPipe(1,0xF0F0F0F0D2LL); 
   radio.enableDynamicPayloads();
   radio.powerUp();
-   radio.setPayloadSize(32);
+  radio.setPayloadSize(32);
 
   Serial.begin(9600);	// Initialize serial communications with the PC
   while(!Serial);  //Make sure that we can see the diagnostics before we continue. 
@@ -49,6 +49,7 @@ void loop() {
   char readTimeout=0;
   int salt;  //Pad the data that's sent with something extra so that it's not the same every time (even for the same card)
   //Serial.println("start");
+  delay(200); //Put some sort of delay into the loop so the processor isn't free-running. 
   
   //Look for new cards
   if (! mfrc522.PICC_IsNewCardPresent()) {
@@ -68,86 +69,87 @@ void loop() {
     Serial.print(mfrc522.uid.uidByte[i], HEX);
   } 
   Serial.println();
-  
+
   //Send some sort of identifier so that we cn use this card scanner for other applications than just entry (like controlling the beer fridge). 
   salt = millis() %1000;
   sprintf(outBuffer, "d1%X %X %X %X%i\0", mfrc522.uid.uidByte[0], mfrc522.uid.uidByte[1], mfrc522.uid.uidByte[2], mfrc522.uid.uidByte[3], salt);
-  
+
   Serial.print("outBuffer=");
   Serial.println(outBuffer);
   //Encrypt the data.
-  
+
   aes128_enc_single(key, outBuffer);
 
   Serial.print("Encrypted Data: ");
   Serial.println(outBuffer);
-  
-  delay(200);  //Why is there a delay here? 
-  
   //bool RF24::write( const void* buf, uint8_t len )
-  
+
   radio.write(outBuffer, 16);
-  
+
   // ========================================================================
   /* For the door to be unlocked, the controller needs to respond to the transmitted key within about 0.2s. 
-     The code is never going to reach this point unless a key has been scanned, so you'd need to scan a card 
-     and then immediately send the 'open' command before the main controller could respond. If there's no card 
-     scanned, the door will never open.
-     */
- // ========================================================================
-  
+   The code is never going to reach this point unless a key has been scanned, so you'd need to scan a card 
+   and then immediately send the 'open' command before the main controller could respond. If there's no card 
+   scanned, the door will never open.
+   */
+  // ========================================================================
+
   radio.startListening();
- //======================
-     unsigned long started_waiting_at = millis();
+  //======================
+  unsigned long started_waiting_at = millis();
 
- 
- bool timeout = false;
-    while ( ! radio.available() && ! timeout )
-      if (millis() - started_waiting_at > 1000 )
-        timeout = true;
 
-    // Describe the results
-    if ( timeout )
+  bool timeout = false;
+  while ( ! radio.available() && ! timeout )
+    if (millis() - started_waiting_at > 2000 )
     {
-       Serial.println("Failed, response timed out.");
+      timeout = true;
     }
-    else
-    {
-      // Grab the response, compare, and send to debugging spew
-     uint8_t len = radio.getDynamicPayloadSize();
-    radio.read(receivePayload, len);
-    }
- 
- 
- //=======================
-  /*while(readTimeout < 400)  //This introduces some delay into the unlocking procedure, so isn't ideal -- should probably unlock the door immediately after a suitable payload is received. 
- {
-   while(radio.available()) {
+    
+  // Describe the results
+  if ( timeout )
+  {
+    Serial.println("Failed, response timed out.");
+  }
+  else
+  {
+    // Grab the response, compare, and send to debugging spew
     uint8_t len = radio.getDynamicPayloadSize();
     radio.read(receivePayload, len);
   }
-  delay(2);
-  readTimeout++;
-}
-  */
- 
-    
+
+
+  //=======================
+  /*while(readTimeout < 400)  //This introduces some delay into the unlocking procedure, so isn't ideal -- should probably unlock the door immediately after a suitable payload is received. 
+   {
+   while(radio.available()) {
+   uint8_t len = radio.getDynamicPayloadSize();
+   radio.read(receivePayload, len);
+   }
+   delay(2);
+   readTimeout++;
+   }
+   */
+
+
   radio.stopListening();
-    Serial.print("Received a ");
-    Serial.print(receivePayload);
-    Serial.println(";");
-    
-    //Now need to decrypt the payload
-    //Use the handy AESLib function to overwrite in place 
-     aes128_dec_single(key, receivePayload);
-    
-    if(receivePayload[0] == '1') {
-       tone(3, 4000, 20);
-    } else {
-      tone(3, 200, 100);
-    }
+  Serial.print("Received a ");
+  Serial.print(receivePayload);
+  Serial.println(";");
+
+  //Now need to decrypt the payload
+  //Use the handy AESLib function to overwrite in place 
+  aes128_dec_single(key, receivePayload);
+
+  if(receivePayload[0] == '1') {
+    tone(3, 4000, 20);
+  } 
+  else {
+    tone(3, 200, 100);
+  }
   delay(1000);
 }
+
 
 
 
