@@ -41,11 +41,14 @@ void setup() {
   SPI.begin();		// Init SPI bus
   mfrc522.PCD_Init();	// Init MFRC522 card
   Serial.println("Initialised and ready to broadcast.");
+ 
 }
 
 void loop() {
   char outBuffer[32] = ""; //Somewhere to store the data.
   char receivePayload[32] = "";
+
+  
   char readTimeout=0;
   int salt;  //Pad the data that's sent with something extra so that it's not the same every time (even for the same card)
   //Serial.println("start");
@@ -116,6 +119,8 @@ void loop() {
     // Grab the response, compare, and send to debugging spew
     uint8_t len = radio.getDynamicPayloadSize();
     radio.read(receivePayload, len);
+    Serial.print("Length was ");
+    Serial.println(len, DEC);
   }
 
 
@@ -140,7 +145,9 @@ void loop() {
   //Now need to decrypt the payload
   //Use the handy AESLib function to overwrite in place 
   aes128_dec_single(key, receivePayload);
-
+  Serial.print("Decrypted Payload =");
+  Serial.println(receivePayload);
+  
   if(receivePayload[0] == '1') {
     tone(3, 4000, 20);
   } 
