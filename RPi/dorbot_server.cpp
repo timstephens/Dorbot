@@ -183,8 +183,8 @@ void loop(void)
 		AES_encrypt((const unsigned char *)buffer, enc_out, &enc_key);
 		radio.stopListening();
 usleep(50);
-		if(radio.write(buffer, 12)) {
-			cout << "Successfully replied" << buffer << endl;
+		if(radio.write(enc_out, 16)) {
+			cout << "Successfully replied" << buffer << " " << enc_out << endl;
 		} else {
 			cout << "Was trying to write:" << buffer << endl;
 			cout << "Error replying" << endl;
@@ -202,10 +202,11 @@ int main(int argc, char **argv)
 	setup(); //Run the radio setup stuff
 
 	printf("MySQL client version: %s\n", mysql_get_client_info());
+
 while(1)
 {
 	loop();
-	usleep(10000);
+	usleep(100000);
 }
 
 	exit(0);
