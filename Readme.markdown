@@ -32,6 +32,14 @@ There are several requirements, both in terms of hardware and software.
 Installation on Raspberry Pi
 ----------------------------
 
+###Hardware Setup
+
+You need to have SPI enabled on your Raspberry Pi. You can do this with `raspi-config`
+
+	sudo raspi-config
+	
+Scroll to the 'Advanced Options' and select 'enable SPI'
+
 Connect up the radio to the GPIO on the Pi. The pins are:
 
 	Radio -- Raspberry Pi
@@ -56,10 +64,9 @@ Enable access to the SPI module by commenting out the line in the blacklist file
 	
 You should see spi in the list of available modules.
 
+###Software Setup
 
 Install MySQL and libmysqlclient-dev:
-
-Raspberry Pi
 
 	sudo apt-get update
 	sudo apt-get dist-upgrade
@@ -72,20 +79,39 @@ Raspberry Pi
 
 	sudo apt-get install libmysqlclient-dev
 
+If you've not done this yet, clone the Dorbot repository to a directory on your Raspberry Pi. 
+
+	git clone https://github.com/timstephens/Dorbot.git
+	
+	
 Log in to mysql using the password that you created for root during the installation.
 
 	mysql -u root -p
 	
->password
+> enter your password
 
 	
-Load the mysql dump file into the database. In the mysql client:
+Create the database and load the mysql dump file into the database. In the mysql client:
 
+	create database door;
+	use door;
 	source Dorbot/RPi/db.mysql
+	
+Grant permission to the dorbot user to access the databases
 
-Get the RF24 library, and install as required.
+	GRANT SELECT, UPDATE, INSERT on door.users to 'dorbot'@'localhost' IDENTIFIED BY 'password';
+	GRANT SELECT, UPDATE, INSERT on door.access to 'dorbot'@'localhost' IDENTIFIED BY 'password';
+	
+NB: You'll need to enter the password that you compile into the dorbot_server.cpp file.
 
-	git clone https://www.github.com/maniacbug/RF24.git Dorbot
+Get the RF24 library, and install as required. (Instructions as [here](http://arduino-for-beginners.blogspot.it/2013/02/setup-nordic-nrf24l01-rf-modules-to.html))
+
+	git clone git clone https://github.com/stanleyseow/RF24.git rf24
+	cd rf24/librf24-rpi/librf24
+	make
+	sudo make install
+	sudo ldconfig -v | grep librf
+	
 
 I copied the .h, .cpp and .o files into the Dorbot folder rather than specifying their installation locations.
 
