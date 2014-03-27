@@ -31,7 +31,19 @@ There are several requirements, both in terms of hardware and software.
 
 Installation on Raspberry Pi
 ----------------------------
-Connect up the radio to the GPIO on the Pi. 
+
+Connect up the radio to the GPIO on the Pi. The pins are:
+
+	Radio -- Raspberry Pi
+	1 GND -- 6
+	2 3v3 -- 1
+	3 CE -- 22
+	4 CSN -- 24
+	5 SCK -- 23
+	6 MOSI -- 19
+	7 MISO -- 21
+	8 IRQ -- NC
+
 
 Enable access to the SPI module by commenting out the line in the blacklist file
 
