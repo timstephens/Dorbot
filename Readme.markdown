@@ -88,6 +88,25 @@ Run the server
 
 You should see MySQL version information printed out, and then the server should wait for incoming connections from the Arduino.
 
+
+
+Adding Users
+------------
+
+You can add users by logging into the MySQL database and adding a new card ID. Card IDs can be read by either running the dorbot_server from the command line (you'll need to kill it from supervisord first) or by connecting the Arduino IDE to the door end and starting the serial terminal.
+
+Next, run mysql as root
+	
+	mysql -u root -p door
+
+The password is 'oxhack'.
+
+Then insert the user into the database
+
+	INSERT INTO users (username, key_id, valid_user) VALUES ("Name", "AA BB 11 22", 1);
+
+This will add a user named 'Name' with the key id AA BB 11 22 and allow them to access the door (they'll get the allowed pip noise).
+
 Installation on Arduino
 -----------------------
 
