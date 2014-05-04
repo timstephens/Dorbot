@@ -75,7 +75,7 @@ void loop() {
 
   //Send some sort of identifier so that we cn use this card scanner for other applications than just entry (like controlling the beer fridge). 
   salt = millis() %1000;
-  sprintf(outBuffer, "d1%X %X %X %X%i\0", mfrc522.uid.uidByte[0], mfrc522.uid.uidByte[1], mfrc522.uid.uidByte[2], mfrc522.uid.uidByte[3], salt);
+  sprintf(outBuffer, "d1%02X %02X %02X %02X%i\0", mfrc522.uid.uidByte[0], mfrc522.uid.uidByte[1], mfrc522.uid.uidByte[2], mfrc522.uid.uidByte[3], salt);
 
   Serial.print("outBuffer=");
   Serial.println(outBuffer);
